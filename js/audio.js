@@ -22,26 +22,42 @@ function showCaption(text) {
   captionTimer = setTimeout(() => captionEl.classList.remove('show'), 3000);
 }
 
+// Phones ship several voices of very different quality. Prefer the
+// natural/neural ones over the robotic defaults. Voices load async,
+// so keep re-checking on voiceschanged.
+let enVoice = null;
+let kmVoice = null;
+
+function voiceScore(v) {
+  let s = 0;
+  if (/natural|neural|premium|enhanced/i.test(v.name)) s += 4;
+  if (/google/i.test(v.name)) s += 3;
+  if (/samantha|karen|moira|daniel/i.test(v.name)) s += 2;
+  if (v.lang === 'en-US') s += 1;
+  return s;
+}
+
+function refreshVoices() {
+  const voices = speechSynthesis.getVoices() || [];
+  kmVoice = voices.find(v => (v.lang || '').toLowerCase().startsWith('km')) || null;
+  enVoice = voices
+    .filter(v => (v.lang || '').toLowerCase().startsWith('en'))
+    .sort((a, b) => voiceScore(b) - voiceScore(a))[0] || null;
+}
+if ('speechSynthesis' in window) {
+  refreshVoices();
+  speechSynthesis.addEventListener?.('voiceschanged', refreshVoices);
+}
+
 function speakEnglish(text) {
   if (!('speechSynthesis' in window)) return;
   speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(text);
-  u.lang = 'en-US';
-  u.rate = 0.85;
-  u.pitch = 1.1;
+  if (enVoice) u.voice = enVoice;
+  u.lang = enVoice?.lang || 'en-US';
+  u.rate = 0.9;
+  u.pitch = 1.05;
   speechSynthesis.speak(u);
-}
-
-// Some phones (most Androids) ship a Khmer voice; iPhones don't.
-// Voices load async, so keep re-checking on voiceschanged.
-let kmVoice = null;
-function refreshKmVoice() {
-  const voices = speechSynthesis.getVoices() || [];
-  kmVoice = voices.find(v => (v.lang || '').toLowerCase().startsWith('km')) || null;
-}
-if ('speechSynthesis' in window) {
-  refreshKmVoice();
-  speechSynthesis.addEventListener?.('voiceschanged', refreshKmVoice);
 }
 
 function speakKhmer(text) {
@@ -49,8 +65,8 @@ function speakKhmer(text) {
   const u = new SpeechSynthesisUtterance(text);
   u.voice = kmVoice;
   u.lang = kmVoice.lang;
-  u.rate = 0.85;
-  u.pitch = 1.1;
+  u.rate = 0.9;
+  u.pitch = 1.05;
   speechSynthesis.speak(u);
 }
 

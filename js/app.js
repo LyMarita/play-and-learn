@@ -51,7 +51,8 @@ const api = {
     progress.addStars(1);
     updateStars();
     chime('win');
-    say('great_job');
+    const praise = ['great_job', 'great_job_2', 'great_job_3'];
+    say(praise[Math.floor(Math.random() * praise.length)]);
     burst(false);
   },
   bigWin() {

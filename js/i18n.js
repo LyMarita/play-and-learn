@@ -4,6 +4,8 @@ export const STRINGS = {
   app_title:   { en: 'Play & Learn', km: 'លេង និង រៀន' },
   hub_welcome: { en: 'What do you want to play?', km: 'តើចង់លេងអ្វី?' },
   great_job:   { en: 'Great job!', km: 'ល្អណាស់!' },
+  great_job_2: { en: 'Wonderful!', km: 'អស្ចារ្យ!' },
+  great_job_3: { en: 'You are so clever!', km: 'ពូកែណាស់!' },
   try_again:   { en: 'Try again!', km: 'សាកម្តងទៀត!' },
   all_done:    { en: 'You did it! Amazing!', km: 'អ្នកធ្វើបានហើយ! អស្ចារ្យណាស់!' },
   go:          { en: 'Go!', km: 'ទៅ!' },
