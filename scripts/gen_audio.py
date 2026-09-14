@@ -1,6 +1,6 @@
 # Generate all game speech as mp3 files with neural voices (edge-tts).
 # Run: uv run --with edge-tts python scripts/gen_audio.py
-# Output: audio/en/<clipId>.mp3 and audio/km/<clipId>.mp3
+# Output: audio/<set>/<clipId>.mp3, one folder per voice set below.
 # Phrase table mirrors js/i18n.js — keep them in sync.
 
 import asyncio
@@ -8,8 +8,13 @@ import pathlib
 
 import edge_tts
 
-VOICES = {"en": "en-US-JennyNeural", "km": "km-KH-SreymomNeural"}
-RATES = {"en": "-5%", "km": "+0%"}  # near-natural pace; heavy slowdown sounds robotic
+# set name -> (phrase language, neural voice, rate)
+# near-natural pace; heavy slowdown sounds robotic
+VOICE_SETS = {
+    "en-jenny":   ("en", "en-US-JennyNeural", "-5%"),
+    "km-sreymom": ("km", "km-KH-SreymomNeural", "+0%"),
+    "km-piseth":  ("km", "km-KH-PisethNeural", "+0%"),
+}
 
 STATIC = {
     "hub_welcome":  {"en": "What do you want to play?", "km": "តើចង់លេងអ្វី?"},
@@ -57,25 +62,25 @@ def build_phrases():
     return phrases
 
 
-async def gen_one(sem, lang, clip_id, text):
-    out = pathlib.Path("audio") / lang / f"{clip_id}.mp3"
+async def gen_one(sem, set_name, voice, rate, clip_id, text):
+    out = pathlib.Path("audio") / set_name / f"{clip_id}.mp3"
     if out.exists():
         return
     async with sem:
-        tts = edge_tts.Communicate(text, VOICES[lang], rate=RATES[lang])
+        tts = edge_tts.Communicate(text, voice, rate=rate)
         await tts.save(str(out))
         print(f"{out}")
 
 
 async def main():
     phrases = build_phrases()
-    for lang in VOICES:
-        (pathlib.Path("audio") / lang).mkdir(parents=True, exist_ok=True)
+    for set_name in VOICE_SETS:
+        (pathlib.Path("audio") / set_name).mkdir(parents=True, exist_ok=True)
     sem = asyncio.Semaphore(5)
     tasks = [
-        gen_one(sem, lang, clip_id, texts[lang])
+        gen_one(sem, set_name, voice, rate, clip_id, texts[lang])
         for clip_id, texts in phrases.items()
-        for lang in VOICES
+        for set_name, (lang, voice, rate) in VOICE_SETS.items()
     ]
     await asyncio.gather(*tasks)
     print(f"done: {len(tasks)} clips")

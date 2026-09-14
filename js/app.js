@@ -1,5 +1,7 @@
 import { t, getLang, setLang } from './i18n.js';
-import { initAudio, say, chime } from './audio.js';
+import {
+  initAudio, say, chime, getKmClipVoice, setKmClipVoice,
+} from './audio.js';
 import * as progress from './progress.js';
 import maze from './modules/maze.js';
 import counting from './modules/counting.js';
@@ -8,7 +10,7 @@ import letters from './modules/letters.js';
 
 // Keep in sync with VERSION in sw.js — shown on the hub so anyone can
 // tell which version a phone is actually running.
-const APP_VERSION = 'v6';
+const APP_VERSION = 'v7';
 
 // ── Module registry ──────────────────────────────────────────────
 // Adding a game later = import it and add one line here.
@@ -91,6 +93,19 @@ function renderHub() {
   ver.className = 'version-tag';
   ver.textContent = APP_VERSION;
   screen.appendChild(ver);
+  if (getLang() === 'km') {
+    // Khmer voice switch: 👩 Sreymom / 👨 Piseth, sample on tap
+    const voiceBtn = document.createElement('button');
+    voiceBtn.className = 'voice-btn';
+    const label = () => (getKmClipVoice() === 'sreymom' ? '🗣️ 👩' : '🗣️ 👨');
+    voiceBtn.textContent = label();
+    voiceBtn.addEventListener('click', () => {
+      setKmClipVoice(getKmClipVoice() === 'sreymom' ? 'piseth' : 'sreymom');
+      voiceBtn.textContent = label();
+      say('great_job');
+    });
+    screen.appendChild(voiceBtn);
+  }
   say('hub_welcome');
 }
 

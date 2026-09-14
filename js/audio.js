@@ -60,11 +60,26 @@ function speakFallback(key, vars, caption) {
 }
 
 // ── Clip playback ────────────────────────────────────────────────
+// Khmer ships two neural voices; the hub has a switch between them.
+export const KM_VOICES = ['sreymom', 'piseth'];
+let kmClipVoice = localStorage.getItem('pal-km-voice') || 'sreymom';
+
+export function getKmClipVoice() { return kmClipVoice; }
+
+export function setKmClipVoice(v) {
+  kmClipVoice = v;
+  localStorage.setItem('pal-km-voice', v);
+}
+
+function clipDir(lang) {
+  return lang === 'km' ? `km-${kmClipVoice}` : 'en-jenny';
+}
+
 let currentClip = null;
 
 function playClip(lang, clipId) {
   return new Promise((resolve, reject) => {
-    const a = new Audio(`audio/${lang}/${clipId}.mp3`);
+    const a = new Audio(`audio/${clipDir(lang)}/${clipId}.mp3`);
     currentClip?.pause();
     currentClip = a;
     a.onended = resolve;
