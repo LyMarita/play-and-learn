@@ -6,6 +6,10 @@ import counting from './modules/counting.js';
 import colors from './modules/colors.js';
 import letters from './modules/letters.js';
 
+// Keep in sync with VERSION in sw.js — shown on the hub so anyone can
+// tell which version a phone is actually running.
+const APP_VERSION = 'v4';
+
 // ── Module registry ──────────────────────────────────────────────
 // Adding a game later = import it and add one line here.
 const MODULES = [maze, counting, colors, letters];
@@ -83,6 +87,10 @@ function renderHub() {
     grid.appendChild(card);
   }
   screen.appendChild(grid);
+  const ver = document.createElement('div');
+  ver.className = 'version-tag';
+  ver.textContent = APP_VERSION;
+  screen.appendChild(ver);
   say('hub_welcome');
 }
 
@@ -107,6 +115,15 @@ updateLangBtn();
 renderHub();
 
 // PWA: offline cache + home-screen install.
+// When a new deploy takes over, reload once so the update shows on the
+// FIRST reopen instead of the second.
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').catch(() => {});
+  navigator.serviceWorker.register('sw.js')
+    .then(reg => reg.update())
+    .catch(() => {});
+  let hadController = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (hadController) location.reload();
+    hadController = true;
+  });
 }

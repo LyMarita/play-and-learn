@@ -1,6 +1,6 @@
 // Cache-first service worker: after the first online visit the game plays
 // offline. Bump VERSION on every deploy so phones pick up the new files.
-const VERSION = 'pal-v3';
+const VERSION = 'pal-v4';
 
 const ASSETS = [
   '.',
@@ -23,7 +23,9 @@ const ASSETS = [
 ];
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(VERSION).then(c => c.addAll(ASSETS)));
+  // no-cache: never re-cache files the browser's HTTP cache holds stale
+  e.waitUntil(caches.open(VERSION).then(c =>
+    c.addAll(ASSETS.map(u => new Request(u, { cache: 'no-cache' })))));
   self.skipWaiting();
 });
 

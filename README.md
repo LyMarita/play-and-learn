@@ -37,5 +37,5 @@ under `js/engine/` and fully unit-tested.
 4. Add its files to `ASSETS` in `sw.js` and bump `VERSION`.
 
 ## Deploy
-GitHub Pages serves the repo root. Bump `VERSION` in `sw.js` on every
-deploy so phones refresh their offline copy.
+GitHub Pages serves the repo root. On every deploy bump BOTH `VERSION` in `sw.js` AND `APP_VERSION` in `js/app.js` (the tag shown on the hub) so phones refresh their offline copy and the running version is visible.
+

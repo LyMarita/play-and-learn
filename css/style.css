@@ -103,6 +103,14 @@ button { font-family: inherit; border: none; cursor: pointer; background: none; 
 .hub-icon { font-size: 3.2rem; }
 .hub-name { font-size: 1.05rem; font-weight: 800; color: #2b4a8b; }
 
+.version-tag {
+  position: absolute;
+  bottom: 6px;
+  right: 12px;
+  font-size: .75rem;
+  color: #2b4a8b55;
+}
+
 /* ── Maze ─────────────────────────────────── */
 .maze-board {
   display: grid;
