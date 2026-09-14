@@ -32,13 +32,42 @@ function speakEnglish(text) {
   speechSynthesis.speak(u);
 }
 
+// Some phones (most Androids) ship a Khmer voice; iPhones don't.
+// Voices load async, so keep re-checking on voiceschanged.
+let kmVoice = null;
+function refreshKmVoice() {
+  const voices = speechSynthesis.getVoices() || [];
+  kmVoice = voices.find(v => (v.lang || '').toLowerCase().startsWith('km')) || null;
+}
+if ('speechSynthesis' in window) {
+  refreshKmVoice();
+  speechSynthesis.addEventListener?.('voiceschanged', refreshKmVoice);
+}
+
+function speakKhmer(text) {
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.voice = kmVoice;
+  u.lang = kmVoice.lang;
+  u.rate = 0.85;
+  u.pitch = 1.1;
+  speechSynthesis.speak(u);
+}
+
 // Speak the string for `key` in the current language, with caption.
 export function say(key, vars = {}) {
   const caption = t(key, vars);
   showCaption(caption);
-  if (getLang() === 'km' && KM_CLIPS.has(key)) {
-    speechSynthesis?.cancel?.();
-    new Audio(`audio/km/${key}.mp3`).play().catch(() => speakEnglish(tEn(key, vars)));
+  if (getLang() === 'km') {
+    // recorded clip (parent's voice) > phone's Khmer voice > English voice
+    if (KM_CLIPS.has(key)) {
+      speechSynthesis?.cancel?.();
+      new Audio(`audio/km/${key}.mp3`).play().catch(() => speakEnglish(tEn(key, vars)));
+    } else if (kmVoice) {
+      speakKhmer(caption);
+    } else {
+      speakEnglish(tEn(key, vars));
+    }
   } else {
     speakEnglish(tEn(key, vars));
   }
