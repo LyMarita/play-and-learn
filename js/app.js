@@ -8,7 +8,7 @@ import letters from './modules/letters.js';
 
 // Keep in sync with VERSION in sw.js — shown on the hub so anyone can
 // tell which version a phone is actually running.
-const APP_VERSION = 'v4';
+const APP_VERSION = 'v5';
 
 // ── Module registry ──────────────────────────────────────────────
 // Adding a game later = import it and add one line here.

@@ -1,6 +1,6 @@
 // Cache-first service worker: after the first online visit the game plays
 // offline. Bump VERSION on every deploy so phones pick up the new files.
-const VERSION = 'pal-v4';
+const VERSION = 'pal-v5';
 
 const ASSETS = [
   '.',
@@ -40,8 +40,8 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   e.respondWith(
     caches.match(e.request).then(hit => hit || fetch(e.request).then(res => {
-      // cache Khmer audio clips as they are first played
-      if (e.request.url.includes('/audio/km/') && res.ok) {
+      // cache voice clips as they are first played
+      if (e.request.url.includes('/audio/') && res.ok) {
         const copy = res.clone();
         caches.open(VERSION).then(c => c.put(e.request, copy));
       }

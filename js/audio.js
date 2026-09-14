@@ -1,13 +1,10 @@
-// Speech: English via the phone's built-in voice (Web Speech API).
-// Khmer via pre-recorded clips in audio/km/<key>.mp3 — list each recorded
-// clip in KM_CLIPS below. Missing clip => Khmer caption + English voice.
+// Speech: pre-generated neural voice clips in audio/<lang>/<clipId>.mp3
+// (see scripts/gen_audio.py) — the same warm human-like voice on every
+// phone, both languages. If a clip is missing or fails, fall back to the
+// phone's speech engine. To use a parent-recorded voice for any phrase,
+// just replace its mp3 file.
 
 import { t, tEn, getLang } from './i18n.js';
-
-// Add a key here after dropping its recording into audio/km/<key>.mp3
-const KM_CLIPS = new Set([
-  // 'great_job', 'try_again', ...
-]);
 
 let captionEl = null;
 let captionTimer = 0;
@@ -22,9 +19,9 @@ function showCaption(text) {
   captionTimer = setTimeout(() => captionEl.classList.remove('show'), 3000);
 }
 
-// Phones ship several voices of very different quality. Prefer the
-// natural/neural ones over the robotic defaults. Voices load async,
-// so keep re-checking on voiceschanged.
+// ── Fallback: phone's own speech engine ─────────────────────────
+// Prefer the natural/neural voices over the robotic defaults.
+// Voices load async, so keep re-checking on voiceschanged.
 let enVoice = null;
 let kmVoice = null;
 
@@ -49,47 +46,44 @@ if ('speechSynthesis' in window) {
   speechSynthesis.addEventListener?.('voiceschanged', refreshVoices);
 }
 
-function speakEnglish(text) {
+function speakFallback(key, vars, caption) {
   if (!('speechSynthesis' in window)) return;
   speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  if (enVoice) u.voice = enVoice;
-  u.lang = enVoice?.lang || 'en-US';
+  const km = getLang() === 'km' && kmVoice;
+  const u = new SpeechSynthesisUtterance(km ? caption : tEn(key, vars));
+  const voice = km ? kmVoice : enVoice;
+  if (voice) { u.voice = voice; u.lang = voice.lang; }
+  else u.lang = 'en-US';
   u.rate = 0.9;
   u.pitch = 1.05;
   speechSynthesis.speak(u);
 }
 
-function speakKhmer(text) {
-  speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.voice = kmVoice;
-  u.lang = kmVoice.lang;
-  u.rate = 0.9;
-  u.pitch = 1.05;
-  speechSynthesis.speak(u);
+// ── Clip playback ────────────────────────────────────────────────
+let currentClip = null;
+
+function playClip(lang, clipId) {
+  return new Promise((resolve, reject) => {
+    const a = new Audio(`audio/${lang}/${clipId}.mp3`);
+    currentClip?.pause();
+    currentClip = a;
+    a.onended = resolve;
+    a.onerror = () => reject(new Error('clip missing'));
+    a.play().catch(reject);
+  });
 }
 
 // Speak the string for `key` in the current language, with caption.
-export function say(key, vars = {}) {
+// clipId names the audio file when the phrase has variants
+// (e.g. `tap_letter_B`); defaults to the key itself.
+export function say(key, vars = {}, clipId = key) {
   const caption = t(key, vars);
   showCaption(caption);
-  if (getLang() === 'km') {
-    // recorded clip (parent's voice) > phone's Khmer voice > English voice
-    if (KM_CLIPS.has(key)) {
-      speechSynthesis?.cancel?.();
-      new Audio(`audio/km/${key}.mp3`).play().catch(() => speakEnglish(tEn(key, vars)));
-    } else if (kmVoice) {
-      speakKhmer(caption);
-    } else {
-      speakEnglish(tEn(key, vars));
-    }
-  } else {
-    speakEnglish(tEn(key, vars));
-  }
+  speechSynthesis?.cancel?.();
+  playClip(getLang(), clipId).catch(() => speakFallback(key, vars, caption));
 }
 
-// Speak a raw word (already localized upstream), e.g. counting "1, 2, 3".
+// Speak a number 1-10 while counting.
 export function sayNumber(n) {
   say(`num_${n}`);
 }

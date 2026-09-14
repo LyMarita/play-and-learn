@@ -26,7 +26,7 @@ export default {
       api.say('find_it', {
         color: colorWord(round.target.color),
         shape: shapeWord(round.target.shape),
-      });
+      }, `find_it_${round.target.color}_${round.target.shape}`);
     }
 
     function playRound(round) {

@@ -28,7 +28,8 @@ export default {
       const replay = document.createElement('button');
       replay.className = 'replay-btn';
       replay.textContent = '🔊';
-      replay.addEventListener('click', () => api.say('tap_letter', { letter: round.target }));
+      replay.addEventListener('click', () =>
+        api.say('tap_letter', { letter: round.target }, `tap_letter_${round.target}`));
       root.appendChild(replay);
 
       const grid = document.createElement('div');
@@ -55,7 +56,7 @@ export default {
         grid.appendChild(card);
       }
       root.appendChild(grid);
-      api.say('tap_letter', { letter: round.target });
+      api.say('tap_letter', { letter: round.target }, `tap_letter_${round.target}`);
     }
 
     nextRound();
