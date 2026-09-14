@@ -8,7 +8,8 @@ import pathlib
 
 import edge_tts
 
-VOICES = {"en": "en-US-AnaNeural", "km": "km-KH-SreymomNeural"}
+VOICES = {"en": "en-US-JennyNeural", "km": "km-KH-SreymomNeural"}
+RATES = {"en": "-5%", "km": "+0%"}  # near-natural pace; heavy slowdown sounds robotic
 
 STATIC = {
     "hub_welcome":  {"en": "What do you want to play?", "km": "តើចង់លេងអ្វី?"},
@@ -61,7 +62,7 @@ async def gen_one(sem, lang, clip_id, text):
     if out.exists():
         return
     async with sem:
-        tts = edge_tts.Communicate(text, VOICES[lang], rate="-10%")
+        tts = edge_tts.Communicate(text, VOICES[lang], rate=RATES[lang])
         await tts.save(str(out))
         print(f"{out}")
 

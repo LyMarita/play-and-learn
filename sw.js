@@ -1,6 +1,6 @@
 // Cache-first service worker: after the first online visit the game plays
 // offline. Bump VERSION on every deploy so phones pick up the new files.
-const VERSION = 'pal-v5';
+const VERSION = 'pal-v6';
 
 const ASSETS = [
   '.',
